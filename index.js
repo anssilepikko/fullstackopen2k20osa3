@@ -60,14 +60,17 @@ app.get('/api/persons/:id', (request, response) => {
   // Muutetaan merkkijono-muotoinen id numeroksi
   const id = Number(request.params.id)
   const person = persons.find(person => person.id === id)
-  console.log(`GET ${id}`)
+  console.log(`GET id ${id}`)
 
   if (person) {
     response.json(person)
+    console.log(person)
   }
-  else
+  else {
     // Vastataan statuskoodi 404:llä, jos ei löydy eli find antaa 'undefined'
-    response.status(400).end()
+    response.status(404).end()
+    console.log(`${id} not found`)
+  }
 })
 // Mitä rivillä tapahtuu? notes.map(n => n.id) muodostaa taulukon, joka
 // koostuu muistiinpanojen id-kentistä. Math.max palauttaa maksimin sille
@@ -107,7 +110,7 @@ app.post('/api/persons', (request, response) => {
     important: body.important || false,
     date: new Date(),
   }
-  
+
   persons = persons.concat(person)
 
   response.json(person)
