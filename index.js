@@ -42,6 +42,12 @@ app.get('/', (reguest, response) => {
   response.send('<h1>Hello World!</h1>')
 })
 
+app.get('/info', (reguest, response) => {
+  const count = persons.length
+  const date = new Date()
+  response.send(`The phonebook has info for ${count} people <br/> ${date}`)
+})
+
 // Route '/api/persons', tapahtumankäsittelijä em.
 // osoitteeseen tuleville pyynnöille
 app.get('/api/persons', (request, response) => {
@@ -63,7 +69,12 @@ app.get('/api/persons/:id', (request, response) => {
     // Vastataan statuskoodi 404:llä, jos ei löydy eli find antaa 'undefined'
     response.status(400).end()
 })
-
+// Mitä rivillä tapahtuu? notes.map(n => n.id) muodostaa taulukon, joka
+// koostuu muistiinpanojen id-kentistä. Math.max palauttaa maksimin sille
+// parametrina annetuista luvuista. notes.map(n => n.id) on kuitenkin taulukko,
+// joten se ei kelpaa parametriksi komennolle Math.max. Taulukko voidaan
+// muuttaa yksittäisiksi luvuiksi käyttäen taulukon spread-syntaksia, eli
+// kolmea pistettä ...taulukko.
 const generateId = () => {
   const maxId = notes.length > 0
     ? Math.max(...notes.map(n => n.id))
