@@ -96,6 +96,7 @@ const generateId = () => {
   return maxId + 1
 }
 
+// Uuden henkilön lisääminen
 app.post('/api/persons', (request, response) => {
   // Tapahtumankäsittelijäfunktio pääsee dataan käsiksi olion
   // request kentän body avulla
@@ -108,17 +109,17 @@ app.post('/api/persons', (request, response) => {
 
   const body = request.body
 
-  if (!body.content) {
+  if (!body.name) {
     // Poistutaan, jos datalla ei sisältöä
     return response.status(400).json({
-      error: 'content missing'
+      error: 'Name missing'
     })
   }
 
   const person = {
     id: generateId(),
-    content: body.content,
-    important: body.important || false,
+    name: body.name,
+    number: body.number,
     date: new Date(),
   }
 
