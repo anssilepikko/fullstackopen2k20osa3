@@ -5,7 +5,7 @@ const app = express()
 // Expressin json-parser
 app.use(express.json())
 
-const persons = [
+let persons = [
   {
     id: 1,
     name: 'Arto Hellas',
@@ -42,6 +42,7 @@ app.get('/', (reguest, response) => {
   response.send('<h1>Hello World!</h1>')
 })
 
+// Infosivu
 app.get('/info', (reguest, response) => {
   const count = persons.length
   const date = new Date()
@@ -72,15 +73,25 @@ app.get('/api/persons/:id', (request, response) => {
     console.log(`${id} not found`)
   }
 })
-// Mitä rivillä tapahtuu? notes.map(n => n.id) muodostaa taulukon, joka
+
+// Henkilön poisto puhelinluettelosta
+app.delete('/api/persons/:id', (request, response) => {
+  const id = Number(request.params.id)
+  // Filtteröi pois haetun henkilön id
+  persons = persons.filter(person => person.id !== id)
+  response.status(204).end()
+  console.log(`Deleted person with ${id}`)
+})
+
+// Mitä rivillä tapahtuu? persons.map(n => n.id) muodostaa taulukon, joka
 // koostuu muistiinpanojen id-kentistä. Math.max palauttaa maksimin sille
-// parametrina annetuista luvuista. notes.map(n => n.id) on kuitenkin taulukko,
+// parametrina annetuista luvuista. persons.map(n => n.id) on kuitenkin taulukko,
 // joten se ei kelpaa parametriksi komennolle Math.max. Taulukko voidaan
 // muuttaa yksittäisiksi luvuiksi käyttäen taulukon spread-syntaksia, eli
 // kolmea pistettä ...taulukko.
 const generateId = () => {
-  const maxId = notes.length > 0
-    ? Math.max(...notes.map(n => n.id))
+  const maxId = persons.length > 0
+    ? Math.max(...persons.map(n => n.id))
     : 0
   return maxId + 1
 }
