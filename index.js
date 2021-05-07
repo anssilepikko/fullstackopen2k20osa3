@@ -96,6 +96,18 @@ const generateId = () => {
   return maxId + 1
 }
 
+// Nimien etsintä, joka palauttaa totuusarvon
+const findPerson = (person) => {
+  console.log(persons)
+  console.log('FindPerson input:', person)
+  // Käydään nimet läpi
+  // Palautetaan true, jos löytyy
+  // Palautetaan false, jos ei löydy
+  const found = persons.find(item => item.name === person)
+  console.log('Found:', found)
+  return found
+}
+
 // Uuden henkilön lisääminen
 app.post('/api/persons', (request, response) => {
   // Tapahtumankäsittelijäfunktio pääsee dataan käsiksi olion
@@ -109,10 +121,24 @@ app.post('/api/persons', (request, response) => {
 
   const body = request.body
 
+  // Poistutaan, jos nimi puuttuu
   if (!body.name) {
-    // Poistutaan, jos datalla ei sisältöä
+
     return response.status(400).json({
       error: 'Name missing'
+    })
+  }
+    // Poistutaan, jos numero puuttuu
+  if (!body.number) {
+    return response.status(400).json({
+      error: 'Number missing'
+    })
+  }
+
+  // Poistutaan, jos nimi löytyy jo
+  if (findPerson(body.name)) {
+    return response.status(400).json({
+      error: 'Name already in phonebook'
     })
   }
 
@@ -124,7 +150,6 @@ app.post('/api/persons', (request, response) => {
   }
 
   persons = persons.concat(person)
-
   response.json(person)
 })
 
