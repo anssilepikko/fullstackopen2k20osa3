@@ -4,14 +4,16 @@ const express = require('express')
 const morgan = require('morgan');
 
 const app = express()
-
-app.use(morgan('tiny'));
 app.use(express.json())
 
 // Morganin settarit
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :type'));
 app.listen(3002, () => {
   console.debug('App listening on :3002');
 });
+
+// Logataan henkilön tiedot
+morgan.token('type', function (req, res) { return JSON.stringify(req.body) })
 
 let persons = [
   {
@@ -47,7 +49,7 @@ app.get('/', (reguest, response) => {
   // content-type-headerin arvoksi text/html, statuskoodiksi
   // tulee oletusarvoisesti 200
   response.send('<h1>Hello World!</h1>')
-  console.log('GET request on /')
+  //console.log('GET request on /')
 })
 
 // Tapahtumankäsittelijä infosivulle
@@ -55,7 +57,7 @@ app.get('/info', (reguest, response) => {
   const count = persons.length
   const date = new Date()
   response.send(`The phonebook has info for ${count} people <br/> ${date}`)
-  console.log('GET request on /info')
+  //console.log('GET request on /info')
 })
 
 // Route '/api/persons', tapahtumankäsittelijä
@@ -63,7 +65,7 @@ app.get('/info', (reguest, response) => {
 app.get('/api/persons', (request, response) => {
   // Data muuttuu automaattisesti JSON-muotoon, kun käytetään Expressiä
   response.json(persons)
-  console.log('GET request on /api/persons')
+  //console.log('GET request on /api/persons')
 
 })
 
@@ -72,16 +74,16 @@ app.get('/api/persons/:id', (request, response) => {
   // Muutetaan merkkijono-muotoinen id numeroksi
   const id = Number(request.params.id)
   const person = persons.find(person => person.id === id)
-  console.log(`GET request by id ${id}`)
+  //console.log(`GET request by id ${id}`)
 
   if (person) {
     response.json(person)
-    cconsole.log(`Person found found`)
+    //console.log(`Person found found`)
   }
   else {
     // Vastataan statuskoodi 404:llä, jos ei löydy eli find antaa 'undefined'
     response.status(404).end()
-    console.log(`Person not found`)
+    //console.log(`Person not found`)
   }
 })
 
@@ -91,7 +93,7 @@ app.delete('/api/persons/:id', (request, response) => {
   // Filtteröi pois haetun henkilön id
   persons = persons.filter(person => person.id !== id)
   response.status(204).end()
-  console.log(`Deleted person with ${id}`)
+  //console.log(`Deleted person with ${id}`)
 })
 
 // Id-numeron generointi
@@ -137,7 +139,7 @@ app.post('/api/persons', (request, response) => {
       error: 'Name missing'
     })
   }
-    // Poistutaan, jos numero puuttuu
+  // Poistutaan, jos numero puuttuu
   if (!body.number) {
     return response.status(400).json({
       error: 'Number missing'
@@ -160,9 +162,18 @@ app.post('/api/persons', (request, response) => {
 
   persons = persons.concat(person)
   response.json(person)
-  console.log("A new person added to the phonebook")
+  //console.log("A new person added to the phonebook")
 })
+
+// Middleware, jonka ansiosta saadaan routejen käsittelemättömistä
+// virhetilanteista JSON-muotoinen virheilmoitus
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'Unknown endpoint' })
+  //console.log("Unknown endpoint")
+}
+
+app.use(unknownEndpoint)
 
 const port = 3001
 app.listen(port)
-console.log(`Server running on port ${port}`)
+//console.log(`Server running on port ${port}`)
