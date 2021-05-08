@@ -1,9 +1,17 @@
 // Ajetaan komennolla 'npm run dev', jotta uudelleenkäynnistys toimii
 const { request, response } = require('express')
 const express = require('express')
+const morgan = require('morgan');
+
 const app = express()
-// Expressin json-parser
+
+app.use(morgan('tiny'));
 app.use(express.json())
+
+// Morganin settarit
+app.listen(3002, () => {
+  console.debug('App listening on :3002');
+});
 
 let persons = [
   {
@@ -33,44 +41,47 @@ let persons = [
   }
 ]
 
-// Route '/', tapahtumankäsittelijä juureen tuleville
-// pyynnöille
+// Route '/', tapahtumankäsittelijä juureen tuleville pyynnöille
 app.get('/', (reguest, response) => {
   // Koska parametri on merkkijono, asettaa express vastauksessa
   // content-type-headerin arvoksi text/html, statuskoodiksi
   // tulee oletusarvoisesti 200
   response.send('<h1>Hello World!</h1>')
+  console.log('GET request on /')
 })
 
-// Infosivu
+// Tapahtumankäsittelijä infosivulle
 app.get('/info', (reguest, response) => {
   const count = persons.length
   const date = new Date()
   response.send(`The phonebook has info for ${count} people <br/> ${date}`)
+  console.log('GET request on /info')
 })
 
-// Route '/api/persons', tapahtumankäsittelijä em.
-// osoitteeseen tuleville pyynnöille
+// Route '/api/persons', tapahtumankäsittelijä
+// Serveriltä haetaan lista henkilöistä
 app.get('/api/persons', (request, response) => {
   // Data muuttuu automaattisesti JSON-muotoon, kun käytetään Expressiä
   response.json(persons)
-  console.log("GET")
+  console.log('GET request on /api/persons')
+
 })
 
+// Henkilö haetaan id:n perusteella
 app.get('/api/persons/:id', (request, response) => {
   // Muutetaan merkkijono-muotoinen id numeroksi
   const id = Number(request.params.id)
   const person = persons.find(person => person.id === id)
-  console.log(`GET id ${id}`)
+  console.log(`GET request by id ${id}`)
 
   if (person) {
     response.json(person)
-    console.log(person)
+    cconsole.log(`Person found found`)
   }
   else {
     // Vastataan statuskoodi 404:llä, jos ei löydy eli find antaa 'undefined'
     response.status(404).end()
-    console.log(`${id} not found`)
+    console.log(`Person not found`)
   }
 })
 
@@ -83,7 +94,8 @@ app.delete('/api/persons/:id', (request, response) => {
   console.log(`Deleted person with ${id}`)
 })
 
-// Mitä rivillä tapahtuu? persons.map(n => n.id) muodostaa taulukon, joka
+// Id-numeron generointi
+// Persons.map(n => n.id) muodostaa taulukon, joka
 // koostuu muistiinpanojen id-kentistä. Math.max palauttaa maksimin sille
 // parametrina annetuista luvuista. persons.map(n => n.id) on kuitenkin taulukko,
 // joten se ei kelpaa parametriksi komennolle Math.max. Taulukko voidaan
@@ -98,13 +110,10 @@ const generateId = () => {
 
 // Nimien etsintä, joka palauttaa totuusarvon
 const findPerson = (person) => {
-  console.log(persons)
-  console.log('FindPerson input:', person)
   // Käydään nimet läpi
   // Palautetaan true, jos löytyy
   // Palautetaan false, jos ei löydy
   const found = persons.find(item => item.name === person)
-  console.log('Found:', found)
   return found
 }
 
@@ -151,6 +160,7 @@ app.post('/api/persons', (request, response) => {
 
   persons = persons.concat(person)
   response.json(person)
+  console.log("A new person added to the phonebook")
 })
 
 const port = 3001
