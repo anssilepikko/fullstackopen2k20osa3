@@ -1,10 +1,15 @@
 // Ajetaan komennolla 'npm run dev', jotta uudelleenkäynnistys toimii
 const { request, response } = require('express')
+// Pyyntöjen loggaus middleware
 const express = require('express')
 const morgan = require('morgan');
+// Sallii frontin ja backin olevan eri origineissa
+const cors = require('cors')
 
 const app = express()
 app.use(express.json())
+
+app.use(cors())
 
 // Morganin settarit
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :type'));
@@ -176,4 +181,4 @@ app.use(unknownEndpoint)
 
 const port = 3001
 app.listen(port)
-//console.log(`Server running on port ${port}`)
+console.log(`Server running on port ${port}`)
