@@ -8,7 +8,11 @@ const cors = require('cors')
 
 const app = express()
 app.use(express.json())
-
+// Express näyttää staattista sisältöä eli mm. "index.html".
+// Express GET-tyyppisten HTTP-pyyntöjen yhteydessä ensin
+// löytyykö pyynnön polkua vastaavan nimistä tiedostoa
+// hakemistosta build. Jos löytyy, palauttaa Express tiedoston.
+app.use(express.static('build'))
 app.use(cors())
 
 // Morganin settarit
