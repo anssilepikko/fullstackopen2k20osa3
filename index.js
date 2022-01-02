@@ -21,36 +21,24 @@ app.listen(3002, () => {
   console.debug('App listening on :3002');
 });
 
+// Mongoosen url
+const url =
+  `mongodb+srv://fullstackopen:${password}@fullstackopen.bxu5g.mongodb.net/puhelinluettelo?retryWrites=true&w=majority`
+
+mongoose.connect(url)
+
+// Mongoosen skeema
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String,
+})
+
+const Person = mongoose.model('Person', personSchema)
+
 // Logataan henkilön tiedot
 morgan.token('type', function (req, res) { return JSON.stringify(req.body) })
 
-let persons = [
-  {
-    id: 1,
-    name: 'Arto Hellas',
-    number: '091847567'
-  },
-  {
-    id: 2,
-    name: 'Katto Kassinen',
-    number: '059566409'
-  },
-  {
-    id: 3,
-    name: 'Kaapo Kaulin',
-    number: '026740567'
-  },
-  {
-    id: 4,
-    name: 'Kierre Kulmikas',
-    number: '018465595'
-  },
-  {
-    id: 5,
-    name: 'Kaato Kolmikas',
-    number: '027595649'
-  }
-]
+let persons = [{}]
 
 // Route '/', tapahtumankäsittelijä juureen tuleville pyynnöille
 app.get('/', (reguest, response) => {
@@ -72,10 +60,14 @@ app.get('/info', (reguest, response) => {
 // Route '/api/persons', tapahtumankäsittelijä
 // Serveriltä haetaan lista henkilöistä
 app.get('/api/persons', (request, response) => {
-  // Data muuttuu automaattisesti JSON-muotoon, kun käytetään Expressiä
-  response.json(persons)
+  // Haku tietokannasta
+  Person
+  .find({})
+  .then(persons => {
+    response.json(persons)
+    mongoose.connection.close()
+  })
   //console.log('GET request on /api/persons')
-
 })
 
 // Henkilö haetaan id:n perusteella

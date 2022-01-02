@@ -5,20 +5,7 @@ const password = process.argv[2]
 const name = process.argv[3]
 const number = process.argv[4]
 
-// Mongosen url
-const url =
-  `mongodb+srv://fullstackopen:${password}@fullstackopen.bxu5g.mongodb.net/puhelinluettelo?retryWrites=true&w=majority`
-
-mongoose.connect(url)
-
-// Skeema
-const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
-})
-
-const Person = mongoose.model('Person', personSchema)
-
+c
 // Numerotietojen haku komennolla
 // 'node mongo.js salasana'
 if (process.argv.length<4) {
