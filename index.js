@@ -5,16 +5,18 @@ const express = require('express')
 const morgan = require('morgan');
 // Sallii frontin ja backin olevan eri origineissa
 const cors = require('cors')
-// Mongoose MongoDB
-const mongoose = require('mongoose')
 
-const app = express()
-app.use(express.json())
+// Tietokantamoduuli
+const Person = require('./models/person')
+
 // Express näyttää staattista sisältöä eli mm. "index.html".
 // Express GET-tyyppisten HTTP-pyyntöjen yhteydessä ensin
 // löytyykö pyynnön polkua vastaavan nimistä tiedostoa
 // hakemistosta build. Jos löytyy, palauttaa Express tiedoston.
+const app = express()
+app.use(express.json())
 app.use(express.static('build'))
+
 app.use(cors())
 
 // Morganin settarit
@@ -23,24 +25,11 @@ app.listen(3002, () => {
   console.debug('App listening on :3002');
 });
 
-// Mongoosen url
-const url =
-  `mongodb+srv://fullstackopen:${password}@fullstackopen.bxu5g.mongodb.net/puhelinluettelo?retryWrites=true&w=majority`
-
-mongoose.connect(url)
-
-// Mongoosen skeema
-const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
-})
-
-const Person = mongoose.model('Person', personSchema)
 
 // Logataan henkilön tiedot
 morgan.token('type', function (req, res) { return JSON.stringify(req.body) })
 
-let persons = [{}]
+let persons = []
 
 // Route '/', tapahtumankäsittelijä juureen tuleville pyynnöille
 app.get('/', (reguest, response) => {
