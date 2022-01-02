@@ -51,7 +51,7 @@ app.get('/info', (reguest, response) => {
 // Route '/api/persons', tapahtumankäsittelijä
 // Serveriltä haetaan lista henkilöistä
 app.get('/api/persons', (request, response) => {
-  // Haku tietokannasta
+  // Numerotietojen haku tietokannasta
   Person.find({}).then(persons => {
     response.json(persons)
   })
