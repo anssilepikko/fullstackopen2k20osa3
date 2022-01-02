@@ -5,6 +5,8 @@ const express = require('express')
 const morgan = require('morgan');
 // Sallii frontin ja backin olevan eri origineissa
 const cors = require('cors')
+// Mongoose MongoDB
+const mongoose = require('mongoose')
 
 const app = express()
 app.use(express.json())
