@@ -52,11 +52,8 @@ app.get('/info', (reguest, response) => {
 // Serveriltä haetaan lista henkilöistä
 app.get('/api/persons', (request, response) => {
   // Haku tietokannasta
-  Person
-  .find({})
-  .then(persons => {
+  Person.find({}).then(persons => {
     response.json(persons)
-    mongoose.connection.close()
   })
   //console.log('GET request on /api/persons')
 })
