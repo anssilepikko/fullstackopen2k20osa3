@@ -7,7 +7,8 @@ const morgan = require('morgan');
 const cors = require('cors')
 
 // Tietokantamoduuli
-const Person = require('./models/person')
+const Person = require('./models/person');
+const { Mongoose } = require('mongoose');
 
 // Express näyttää staattista sisältöä eli mm. "index.html".
 // Express GET-tyyppisten HTTP-pyyntöjen yhteydessä ensin
@@ -99,6 +100,51 @@ const generateId = () => {
   return maxId + 1
 }
 
+const findPerson = (person) => {
+  const found = Person.find({ name: person })
+  return found
+}
+
+app.post('/api/persons', (request, response) => {
+
+  const body = request.body
+
+  // Poistutaan, jos nimi puuttuu
+  if (!body.name) {
+
+    return response.status(400).json({
+      error: 'Name missing'
+    })
+  }
+  // Poistutaan, jos numero puuttuu
+  if (!body.number) {
+    return response.status(400).json({
+      error: 'Number missing'
+    })
+  }
+
+  /*
+  // Poistutaan, jos nimi löytyy jo
+  if (findPerson(body.name)) {
+    return response.status(400).json({
+      error: 'Name already in phonebook'
+    })
+  }
+  */
+
+  const newPerson = new Person({
+    name: body.name,
+    number: body.number,
+  })
+
+  newPerson.save().then(response => {
+    console.log(`added '${body.name}' number '${body.number}' to phonebook`)
+  })
+
+  response.json(newPerson)
+})
+
+/* VANHA UUDEN NUMERON LISÄYS
 // Nimien etsintä, joka palauttaa totuusarvon
 const findPerson = (person) => {
   // Käydään nimet läpi
@@ -153,6 +199,7 @@ app.post('/api/persons', (request, response) => {
   response.json(person)
   //console.log("A new person added to the phonebook")
 })
+*/
 
 // Middleware, jonka ansiosta saadaan routejen käsittelemättömistä
 // virhetilanteista JSON-muotoinen virheilmoitus
