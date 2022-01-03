@@ -79,11 +79,12 @@ app.get('/api/persons/:id', (request, response) => {
 
 // Henkilön poisto puhelinluettelosta
 app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  // Filtteröi pois haetun henkilön id
-  persons = persons.filter(person => person.id !== id)
-  response.status(204).end()
-  //console.log(`Deleted person with ${id}`)
+  // Poistetaan henkilö tietokannasta id:n perusteella
+  Person.findByIdAndRemove(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
 })
 
 // Id-numeron generointi
@@ -143,63 +144,6 @@ app.post('/api/persons', (request, response) => {
 
   response.json(newPerson)
 })
-
-/* VANHA UUDEN NUMERON LISÄYS
-// Nimien etsintä, joka palauttaa totuusarvon
-const findPerson = (person) => {
-  // Käydään nimet läpi
-  // Palautetaan true, jos löytyy
-  // Palautetaan false, jos ei löydy
-  const found = persons.find(item => item.name === person)
-  return found
-}
-
-// Uuden henkilön lisääminen
-app.post('/api/persons', (request, response) => {
-  // Tapahtumankäsittelijäfunktio pääsee dataan käsiksi olion
-  // request kentän body avulla
-
-  // Ilman json-parserin lisäämistä eli komentoa app.use(express.json())
-  // pyynnön kentän body arvo olisi ollut määrittelemätön. Json-parserin
-  // toimintaperiaatteena on, että se ottaa pyynnön mukana olevan JSON-muotoisen
-  // datan, muuttaa sen JavaScript-olioksi ja sijoittaa request-olion
-  // kenttään body ennen kuin routen käsittelijää kutsutaan.
-
-  const body = request.body
-
-  // Poistutaan, jos nimi puuttuu
-  if (!body.name) {
-
-    return response.status(400).json({
-      error: 'Name missing'
-    })
-  }
-  // Poistutaan, jos numero puuttuu
-  if (!body.number) {
-    return response.status(400).json({
-      error: 'Number missing'
-    })
-  }
-
-  // Poistutaan, jos nimi löytyy jo
-  if (findPerson(body.name)) {
-    return response.status(400).json({
-      error: 'Name already in phonebook'
-    })
-  }
-
-  const person = {
-    id: generateId(),
-    name: body.name,
-    number: body.number,
-    date: new Date(),
-  }
-
-  persons = persons.concat(person)
-  response.json(person)
-  //console.log("A new person added to the phonebook")
-})
-*/
 
 // Middleware, jonka ansiosta saadaan routejen käsittelemättömistä
 // virhetilanteista JSON-muotoinen virheilmoitus
