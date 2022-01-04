@@ -88,6 +88,24 @@ app.get('/api/persons/:id', (request, response, next) => {
     .catch(error => next(error))
 })
 
+// Henkilön tietojen päivitys
+app.put('/api/persons/:id', (request, response, next) =>{
+
+  const body = request.body
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(request.params.id, person, {new: true})
+  .then(updatedPerson => {
+    response.json(updatedPerson)
+    console.log(`# Updated ${updatedPerson}`)
+  })
+  .catch(error => next(error))
+})
+
 // Henkilön poisto puhelinluettelosta
 app.delete('/api/persons/:id', (request, response, next) => {
   // Poistetaan henkilö tietokannasta id:n perusteella
