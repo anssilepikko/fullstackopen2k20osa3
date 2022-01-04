@@ -10,13 +10,13 @@ const url = process.env.MONGODB_URI
 const PORT = process.env.PORT
 
 // Yhteyden muodostus tietokantaan
-console.log('connecting to', url)
+console.log('# Connecting to', url)
 mongoose.connect(url)
     .then(result => {
-        console.log('connected to MongoDB')
+        console.log('# Connected to MongoDB')
     })
     .catch((error) => {
-        console.log('error connecting to MongoDB:', error.message)
+        console.log('# Error connecting to MongoDB:', error.message)
     })
 
 // Skeeman määritys

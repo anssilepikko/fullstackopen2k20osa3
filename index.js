@@ -1,14 +1,17 @@
 // Ajetaan komennolla 'npm run dev', jotta uudelleenkäynnistys toimii
 const { request, response } = require('express')
+
 // Pyyntöjen loggaus middleware
 const express = require('express')
 const morgan = require('morgan');
+
 // Sallii frontin ja backin olevan eri origineissa
 const cors = require('cors')
 
 // Tietokantamoduuli
 const Person = require('./models/person');
 const { Mongoose } = require('mongoose');
+const person = require('./models/person');
 
 // Express näyttää staattista sisältöä eli mm. "index.html".
 // Express GET-tyyppisten HTTP-pyyntöjen yhteydessä ensin
@@ -23,14 +26,26 @@ app.use(cors())
 // Morganin settarit
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :type'));
 app.listen(3002, () => {
-  console.debug('App listening on :3002');
+  console.debug('# App listening on :3002');
 });
 
+// Virheidenkäsittelijät, middleware
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'Malformatted id' })
+  }
+
+  if (error.name === 'DocumentNotFoundError') {
+    return response.status(400).send({ error: 'Document not found while saving' })
+  }
+
+  next(error)
+}
 
 // Logataan henkilön tiedot
 morgan.token('type', function (req, res) { return JSON.stringify(req.body) })
-
-let persons = []
 
 // Route '/', tapahtumankäsittelijä juureen tuleville pyynnöille
 app.get('/', (reguest, response) => {
@@ -38,7 +53,7 @@ app.get('/', (reguest, response) => {
   // content-type-headerin arvoksi text/html, statuskoodiksi
   // tulee oletusarvoisesti 200
   response.send('<h1>Hello World!</h1>')
-  //console.log('GET request on /')
+  console.log('# GET request on /')
 })
 
 // Tapahtumankäsittelijä infosivulle
@@ -46,7 +61,7 @@ app.get('/info', (reguest, response) => {
   const count = persons.length
   const date = new Date()
   response.send(`The phonebook has info for ${count} people <br/> ${date}`)
-  //console.log('GET request on /info')
+  console.log('# GET request on /info')
 })
 
 // Route '/api/persons', tapahtumankäsittelijä
@@ -56,29 +71,25 @@ app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons => {
     response.json(persons)
   })
-  //console.log('GET request on /api/persons')
+  console.log('# GET request on /api/persons')
 })
 
 // Henkilö haetaan id:n perusteella
-app.get('/api/persons/:id', (request, response) => {
-  // Muutetaan merkkijono-muotoinen id numeroksi
-  const id = Number(request.params.id)
-  const person = persons.find(person => person.id === id)
-  //console.log(`GET request by id ${id}`)
-
-  if (person) {
-    response.json(person)
-    //console.log(`Person found found`)
-  }
-  else {
-    // Vastataan statuskoodi 404:llä, jos ei löydy eli find antaa 'undefined'
-    response.status(404).end()
-    //console.log(`Person not found`)
-  }
+// Next siirtää virhetilanteiden käsittelyn eteenpäin
+app.get('/api/persons/:id', (request, response, next) => {
+  Person.findById(request.params.id)
+    .then(person => {
+      if (person ) {
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
+    })
+    .catch(error => next(error))
 })
 
 // Henkilön poisto puhelinluettelosta
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
   // Poistetaan henkilö tietokannasta id:n perusteella
   Person.findByIdAndRemove(request.params.id)
     .then(result => {
@@ -87,38 +98,25 @@ app.delete('/api/persons/:id', (request, response) => {
     .catch(error => next(error))
 })
 
-// Id-numeron generointi
-// Persons.map(n => n.id) muodostaa taulukon, joka
-// koostuu muistiinpanojen id-kentistä. Math.max palauttaa maksimin sille
-// parametrina annetuista luvuista. persons.map(n => n.id) on kuitenkin taulukko,
-// joten se ei kelpaa parametriksi komennolle Math.max. Taulukko voidaan
-// muuttaa yksittäisiksi luvuiksi käyttäen taulukon spread-syntaksia, eli
-// kolmea pistettä ...taulukko.
-const generateId = () => {
-  const maxId = persons.length > 0
-    ? Math.max(...persons.map(n => n.id))
-    : 0
-  return maxId + 1
-}
-
 const findPerson = (person) => {
   const found = Person.find({ name: person })
   return found
 }
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
 
   const body = request.body
 
   // Poistutaan, jos nimi puuttuu
   if (!body.name) {
-
+    console.log("# Add a new person: name missing")
     return response.status(400).json({
       error: 'Name missing'
     })
   }
   // Poistutaan, jos numero puuttuu
   if (!body.number) {
+    console.log("# Add a new person: number missing")
     return response.status(400).json({
       error: 'Number missing'
     })
@@ -127,6 +125,7 @@ app.post('/api/persons', (request, response) => {
   /*
   // Poistutaan, jos nimi löytyy jo
   if (findPerson(body.name)) {
+        console.log("# Add a new person: name already in phonebook")
     return response.status(400).json({
       error: 'Name already in phonebook'
     })
@@ -138,9 +137,9 @@ app.post('/api/persons', (request, response) => {
     number: body.number,
   })
 
-  newPerson.save().then(response => {
-    console.log(`added '${body.name}' number '${body.number}' to phonebook`)
-  })
+  newPerson.save().then(response => 
+    console.log(`# Added '${body.name}' number '${body.number}' to phonebook`)
+  ).catch(error => next(error))
 
   response.json(newPerson)
 })
@@ -149,12 +148,16 @@ app.post('/api/persons', (request, response) => {
 // virhetilanteista JSON-muotoinen virheilmoitus
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: 'Unknown endpoint' })
-  //console.log("Unknown endpoint")
+  console.log('# Unknown endpoint')
 }
 
+// Olemattomien osoitteiden käsittely
 app.use(unknownEndpoint)
+
+// Virheellisten pyyntöjen käsittely
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+  console.log(`# Server running on port ${PORT}`)
 })
