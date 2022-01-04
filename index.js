@@ -48,20 +48,23 @@ const errorHandler = (error, request, response, next) => {
 morgan.token('type', function (req, res) { return JSON.stringify(req.body) })
 
 // Route '/', tapahtumankäsittelijä juureen tuleville pyynnöille
+// Tällä hetkellä juuresta tarjoillaan staattista frontendiä
 app.get('/', (reguest, response) => {
   // Koska parametri on merkkijono, asettaa express vastauksessa
   // content-type-headerin arvoksi text/html, statuskoodiksi
   // tulee oletusarvoisesti 200
-  response.send('<h1>Hello World!</h1>')
+  response.send('<h1>Phonebook</h1>')
   console.log('# GET request on /')
 })
 
 // Tapahtumankäsittelijä infosivulle
-app.get('/info', (reguest, response) => {
-  const count = persons.length
+app.get('/info', (reguest, response, next) => {
   const date = new Date()
-  response.send(`The phonebook has info for ${count} people <br/> ${date}`)
-  console.log('# GET request on /info')
+  Person.estimatedDocumentCount().then(count => {
+    response.send(`The phonebook has info for ${count} people <br/> ${date}`)
+    console.log('# GET request on /info')
+  })
+  .catch(error => next(error))
 })
 
 // Route '/api/persons', tapahtumankäsittelijä
