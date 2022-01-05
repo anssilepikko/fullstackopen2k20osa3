@@ -1,8 +1,7 @@
 // Mongoose MongoDB
 const mongoose = require('mongoose')
-
-// Ympäristömuuttujat
-require('dotenv').config()
+// Validaattori
+const uniqueValidator = require('mongoose-unique-validator')
 
 // Haetaan URL ympäristömuuttujasta
 const url = process.env.MONGODB_URI
@@ -10,20 +9,32 @@ const url = process.env.MONGODB_URI
 const PORT = process.env.PORT
 
 // Yhteyden muodostus tietokantaan
-console.log('connecting to', url)
+console.log('# Connecting to', url)
 mongoose.connect(url)
     .then(result => {
-        console.log('connected to MongoDB')
+        console.log('# Connected to MongoDB')
     })
     .catch((error) => {
-        console.log('error connecting to MongoDB:', error.message)
+        console.log('# Error connecting to MongoDB:', error.message)
     })
 
 // Skeeman määritys
-const personSchema = new mongoose.Schema({
-    name: String,
-    number: String,
+var personSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: true,
+        unique: true,
+        minlength: 3
+    },
+    number: {
+        type: String,
+        required: true,
+        unique: true,
+        minlength: 3
+    },
 })
+
+personSchema.plugin(uniqueValidator)
 
 // Skeeman muuntaminen JSON-muotoon
 personSchema.set('toJSON', {
@@ -31,7 +42,7 @@ personSchema.set('toJSON', {
         returnedObject.id = returnedObject._id.toString()
         delete returnedObject._id
         delete returnedObject.__v
-    }
+    },
 })
 
 // Moduulin ulos näkyvä osa määritellään asettamalla arvo muuttujalle module.exports
