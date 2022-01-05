@@ -47,7 +47,7 @@ app.get('/', (reguest, response) => {
   // content-type-headerin arvoksi text/html, statuskoodiksi
   // tulee oletusarvoisesti 200
   response.send('<h1>Phonebook</h1>')
-  console.log('# GET request on /')
+  console.log('GET request on /')
 })
 
 // Tapahtumankäsittelijä infosivulle
@@ -55,7 +55,7 @@ app.get('/info', (reguest, response, next) => {
   const date = new Date()
   Person.estimatedDocumentCount().then(count => {
     response.send(`The phonebook has info for ${count} people <br/> ${date}`)
-    console.log('# GET request on /info')
+    console.log('GET request on /info')
   })
     .catch(error => next(error))
 })
@@ -67,7 +67,7 @@ app.get('/api/persons', (request, response) => {
   Person.find({}).then(persons => {
     response.json(persons)
   })
-  console.log('# GET request on /api/persons')
+  console.log('GET request on /api/persons')
 })
 
 // Henkilö haetaan id:n perusteella
@@ -97,67 +97,74 @@ app.put('/api/persons/:id', (request, response, next) => {
   Person.findByIdAndUpdate(request.params.id, person, { new: true, runValidators: true })
     .then(updatedPerson => {
       response.json(updatedPerson)
-      console.log(`# Updated ${updatedPerson}`)
+      console.log(`Updated ${updatedPerson}`)
     })
-    .catch(error => next(error))
-})
-
-// Henkilön poisto puhelinluettelosta
-app.delete('/api/persons/:id', (request, response, next) => {
-  // Poistetaan henkilö tietokannasta id:n perusteella
-  Person.findByIdAndRemove(request.params.id)
-    .then(result => {
-      response.status(204).end()
+    .catch(error => {
+      console.log(`Error updating a person`)
+      next(error)
     })
-    .catch(error => next(error))
-})
-
-// Henkilön lisäys puhelinluetteloon
-app.post('/api/persons', (request, response, next) => {
-
-  const body = request.body
-
-  // Poistutaan, jos nimi puuttuu
-  if (!body.name) {
-    console.log("# Add a new person: name missing")
-    return response.status(400).json({ error: 'Name missing' })
-  }
-  // Poistutaan, jos numero puuttuu
-  if (!body.number) {
-    console.log("# Add a new person: number missing")
-    return response.status(400).json({ error: 'Number missing' })
-  }
-
-  const person = new Person({
-    name: body.name,
-    number: body.number,
   })
 
-  person
-  .save()
-    .then(savedPerson => savedPerson.toJSON())
-    .then(savedAndFormattedPerson => {
-      response.json(savedAndFormattedPerson)
-      console.log(`# New person added ${savedAndFormattedPerson}`)
-    }) 
-    .catch(error => next(error))
-})
+
+  // Henkilön poisto puhelinluettelosta
+  app.delete('/api/persons/:id', (request, response, next) => {
+    // Poistetaan henkilö tietokannasta id:n perusteella
+    Person.findByIdAndRemove(request.params.id)
+      .then(result => {
+        response.status(204).end()
+      })
+      .catch(error => next(error))
+  })
+
+  // Henkilön lisäys puhelinluetteloon
+  app.post('/api/persons', (request, response, next) => {
+
+    const body = request.body
+
+    // Poistutaan, jos nimi puuttuu
+    if (!body.name) {
+      console.log("Add a new person: name missing")
+      return response.status(400).json({ error: 'Name missing' })
+    }
+    // Poistutaan, jos numero puuttuu
+    if (!body.number) {
+      console.log("Add a new person: number missing")
+      return response.status(400).json({ error: 'Number missing' })
+    }
+
+    const person = new Person({
+      name: body.name,
+      number: body.number,
+    })
+
+    person
+      .save()
+      .then(savedPerson => savedPerson.toJSON())
+      .then(savedAndFormattedPerson => {
+        response.json(savedAndFormattedPerson)
+        console.log(`New person added ${savedAndFormattedPerson}`)
+      })
+      .catch(error => {
+        console.log(`Error adding a new person`)
+        next(error)
+      })
+  })
 
 
-// Middleware, jonka ansiosta saadaan routejen käsittelemättömistä
-// virhetilanteista JSON-muotoinen virheilmoitus
-const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'Unknown endpoint' })
-  console.log('# Unknown endpoint')
-}
+  // Middleware, jonka ansiosta saadaan routejen käsittelemättömistä
+  // virhetilanteista JSON-muotoinen virheilmoitus
+  const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'Unknown endpoint' })
+    console.log('Unknown endpoint')
+  }
 
-// Olemattomien osoitteiden käsittely
-app.use(unknownEndpoint)
+  // Olemattomien osoitteiden käsittely
+  app.use(unknownEndpoint)
 
-// Virheellisten pyyntöjen käsittely
-app.use(errorHandler)
+  // Virheellisten pyyntöjen käsittely
+  app.use(errorHandler)
 
-const PORT = process.env.PORT
-app.listen(PORT, () => {
-  console.log(`# Server running on port ${PORT}`)
-})
+  const PORT = process.env.PORT
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+  })

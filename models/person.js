@@ -9,13 +9,13 @@ const url = process.env.MONGODB_URI
 const PORT = process.env.PORT
 
 // Yhteyden muodostus tietokantaan
-console.log('# Connecting to', url)
+console.log('Connecting to', url)
 mongoose.connect(url)
     .then(result => {
-        console.log('# Connected to MongoDB')
+        console.log('Connected to MongoDB')
     })
     .catch((error) => {
-        console.log('# Error connecting to MongoDB:', error.message)
+        console.log('Error connecting to MongoDB:', error.message)
     })
 
 // Skeeman määritys
@@ -30,7 +30,7 @@ var personSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        minlength: 3
+        minlength: 8
     },
 })
 
