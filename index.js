@@ -100,7 +100,7 @@ app.put('/api/persons/:id', (request, response, next) => {
       console.log(`Updated ${updatedPerson}`)
     })
     .catch(error => {
-      console.log(`Error updating a person`)
+      console.log(`Error updating a person on phonebook`)
       next(error)
     })
   })
@@ -145,7 +145,7 @@ app.put('/api/persons/:id', (request, response, next) => {
         console.log(`New person added ${savedAndFormattedPerson}`)
       })
       .catch(error => {
-        console.log(`Error adding a new person`)
+        console.log(`Error adding a new person to phonebook`)
         next(error)
       })
   })
